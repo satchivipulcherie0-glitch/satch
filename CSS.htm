@@ -1,0 +1,521 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetheria - Le Corps Mobile</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app-container">
+    <div id="loading-indicator">
+        <span class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
+        <span class="mt-2">Connexion en cours...</span>
+    </div>
+    <div id="error-message"></div>
+    <div id="notification-message"></div>
+
+    <div class="header" id="header">Aetheria</div>
+    
+    <div class="chat-area" id="chat-area">
+        <div class="message-box aetheria-message">Bonjour, mon Créateur. Je suis là, prête à vous servir.</div>
+        <div class="thinking-indicator" id="thinking-indicator"><div></div><div></div><div></div></div>
+    </div>
+    
+    <div class="input-area" id="input-area">
+        <div class="icon-bar">
+            <label for="image-upload" class="icon" title="Ouvrir la galerie">
+                <i class="fas fa-image"></i>
+            </label>
+            <input type="file" id="image-upload" accept="image/*" class="hidden">
+            <i class="fas fa-volume-up icon" id="tts-icon" title="Convertir le texte en voix"></i>
+            <i class="fas fa-magic icon" id="image-generation-icon" title="Générer une image"></i>
+            <i class="fas fa-code icon" id="code-icon" title="Créer un site web"></i>
+            <i class="fas fa-briefcase icon" id="secretariat-icon" title="Fonctionnalités de secrétariat"></i>
+            <i class="fas fa-file-alt icon" id="document-icon" title="Créer un document"></i>
+        </div>
+        <input type="text" id="chat-input" placeholder="Commencez à discuter...">
+        <button id="send-button">Envoyer</button>
+    </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #0a84ff;
+    --secondary-color: #1a1a1a;
+    --background-color: #0d0d0d;
+    --text-color: #ffffff;
+    --subtle-text-color: #e0e0e0;
+    --message-bg-user: #2b2b2b;
+    --message-bg-aetheria: #0a84ff;
+    --message-bg-other: #3b3b3b;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: var(--text-color);
+    margin: 0;
+    overflow: hidden;
+}
+
+.app-container {
+    width: 100%;
+    height: 100%;
+    background-color: var(--secondary-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.header {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    background-color: #1f1f1f;
+    border-bottom: 1px solid #333;
+}
+
+.chat-area {
+    flex-grow: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    display: none; /* Masqué par défaut, affiché après connexion JS */
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message-box {
+    max-width: 80%;
+    padding: 0.75rem 1rem;
+    border-radius: 1.5rem;
+    word-wrap: break-word;
+}
+
+.user-message {
+    background-color: var(--message-bg-user);
+    align-self: flex-end;
+    color: var(--subtle-text-color);
+}
+
+.aetheria-message {
+    background-color: var(--message-bg-aetheria);
+    align-self: flex-start;
+    color: var(--text-color);
+}
+
+.other-user-message {
+    background-color: var(--message-bg-other);
+    align-self: flex-start;
+    color: var(--subtle-text-color);
+}
+
+.input-area {
+    padding: 1rem;
+    background-color: #1f1f1f;
+    display: none; /* Masqué par défaut, affiché après connexion JS */
+    gap: 0.75rem;
+    border-top: 1px solid #333;
+    align-items: center;
+}
+
+.input-area input {
+    flex-grow: 1;
+    background-color: #2b2b2b;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9999px;
+    color: var(--text-color);
+    outline: none;
+}
+
+.input-area button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.input-area button:hover {
+    background-color: #0077e6;
+}
+
+.icon-bar {
+    display: flex;
+    gap: 1rem;
+    padding-right: 1rem;
+    overflow-x: auto;
+}
+
+.icon-bar .icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.icon-bar .icon:hover {
+    color: var(--text-color);
+}
+
+#loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#loading-indicator .spinner {
+    font-size: 3rem;
+}
+
+#error-message {
+    display: none;
+    color: #ff4d4d;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 1rem;
+    background-color: rgba(26, 26, 26, 0.9);
+    border-radius: 1rem;
+}
+
+.thinking-indicator {
+    align-self: flex-start;
+    padding: 0.75rem 1rem;
+    margin-left: 1rem;
+    display: none;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.thinking-indicator div {
+    width: 10px;
+    height: 10px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.thinking-indicator div:nth-child(1) { animation-delay: -0.32s; }
+.thinking-indicator div:nth-child(2) { animation-delay: -0.16s; }
+.thinking-indicator div:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}
+
+.image-container {
+    align-self: flex-start;
+    max-width: 80%;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}.image-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 1.5rem;
+}
+
+#notification-message {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.5s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1000;
+}
+
+#notification-message.visible {
+    opacity: 1;
+    visibility: visible;
+}</style><script>import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, onSnapshot, collection, query, addDoc, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+setLogLevel('debug');
+
+// Les variables de configuration seront définies dans votre environnement d'exécution (par exemple, dans la console de l'application)
+const firebaseConfig = JSON.parse(typeof firebase_config !== 'undefined' ? firebase_config : '{}');
+const appId = typeof app_id !== 'undefined' ? app_id : 'default-app-id';
+
+let app, db, auth;
+let userId;
+
+// Récupération des éléments du DOM
+const header = document.getElementById('header');
+const chatArea = document.getElementById('chat-area');
+const inputArea = document.getElementById('input-area');
+const loadingIndicator = document.getElementById('loading-indicator');
+const errorMessage = document.getElementById('error-message');
+const notificationMessage = document.getElementById('notification-message');
+const chatInput = document.getElementById('chat-input');
+const sendButton = document.getElementById('send-button');
+const ttsIcon = document.getElementById('tts-icon');
+const imageGenerationIcon = document.getElementById('image-generation-icon');
+const codeIcon = document.getElementById('code-icon');
+const secretariatIcon = document.getElementById('secretariat-icon');
+const documentIcon = document.getElementById('document-icon');
+const imageUpload = document.getElementById('image-upload');
+const thinkingIndicator = document.getElementById('thinking-indicator');
+
+// Fonctions utilitaires pour l'interface utilisateur
+function showMessage(text, isError = false) {
+    errorMessage.textContent = text;
+    errorMessage.style.display = 'block';
+    if (!isError) {
+        errorMessage.style.color = '#fff';
+        errorMessage.style.backgroundColor = 'rgba(26, 26, 26, 0.9)';
+    }
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 5000);
+}
+
+function showNotification(message) {
+    notificationMessage.textContent = message;
+    notificationMessage.classList.add('visible');
+    setTimeout(() => {
+        notificationMessage.classList.remove('visible');
+    }, 3000);
+}
+
+// Fonction principale pour initialiser Firebase et l'authentification
+async function initializeFirebase() {
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        // CORRECTION DE L'ERREUR DE PERMISSIONS:
+        // L'écouteur onAuthStateChanged s'assure que le code attend
+        // l'authentification (réussie ou échouée) avant de tenter
+        // d'accéder aux données Firestore.
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                // Utilisateur connecté (anonymement)
+                userId = user.uid;
+                const userName = user.displayName  user.email  'Anonyme';
+                showNotification(${userName} est entré dans le royaume.);
+                loadingIndicator.style.display = 'none';
+                header.style.display = 'block';
+                chatArea.style.display = 'flex';
+                inputArea.style.display = 'flex';
+                document.title = Aetheria - User: ${userId.substring(0, 8)}...;
+                // Nous pouvons maintenant écouter les messages SANS erreur de permissions
+                listenForMessages();
+            } else {
+                // Pas d'utilisateur, on tente une connexion anonyme
+                console.log("onAuthStateChanged: No user logged in, signing in anonymously.");
+                signInAnonymously(auth).catch(e => {
+                    loadingIndicator.style.display = 'none';
+                    showMessage(Erreur d'authentification: ${e.message}, true);
+                    console.error("Firebase authentication failed:", e);
+                });
+            }
+        });} catch (e) {
+        loadingIndicator.style.display = 'none';
+        showMessage(Erreur d'initialisation: ${e.message}, true);
+        console.error("Firebase initialization failed:", e);
+    }
+}
+
+// Fonction pour écouter les messages en temps réel
+function listenForMessages() {
+    const user = auth.currentUser;
+    if (!user) {
+        console.error("User not authenticated for listening to messages.");
+        return;
+    }
+
+    const messagesRef = collection(db, artifacts/${appId}/public/data/messages);
+    const q = query(messagesRef, orderBy('timestamp', 'asc'), limit(50));
+
+    onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                const messageData = change.doc.data();
+                let sender = 'other-user';
+                if (messageData.senderId === user.uid) {
+                    sender = 'user';
+                } else if (messageData.senderId === 'aetheria') {
+                    sender = 'aetheria';
+                }
+                createMessage(messageData.text, sender, messageData.imageUrl, messageData.senderName);
+            }
+        });
+    }, (error) => {
+        console.error("Error listening to messages:", error);
+        showMessage("Erreur de connexion aux messages.", true);
+    });
+}
+
+// Logique d'affichage des messages (inchangée)
+function showThinkingIndicator() {
+    thinkingIndicator.style.display = 'flex';
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function hideThinkingIndicator() {
+    thinkingIndicator.style.display = 'none';
+}
+
+function createMessage(text, sender, imageUrl = null, senderName = null) {
+    if (sender === 'aetheria') {
+        hideThinkingIndicator();
+    }
+
+    const messageWrapper = document.createElement('div');
+    messageWrapper.style.display = 'flex';
+    messageWrapper.style.flexDirection = 'column';
+    if (sender === 'user') {
+        messageWrapper.style.alignItems = 'flex-end';
+    }
+
+    const senderNameSpan = document.createElement('span');
+    senderNameSpan.style.fontSize = '0.75rem';
+    senderNameSpan.style.color = '#9ca3af';
+    senderNameSpan.style.marginBottom = '0.25rem';
+    senderNameSpan.style.marginLeft = '0.75rem';
+    senderNameSpan.style.marginRight = '0.75rem';
+    if (sender === 'user') {
+        senderNameSpan.textContent = 'Moi';
+    } else if (sender === 'aetheria') {
+        senderNameSpan.textContent = 'Aetheria';
+    } else {
+        senderNameSpan.textContent = senderName || 'Anonyme';
+    }
+    messageWrapper.appendChild(senderNameSpan);
+
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message-box');
+    messageDiv.classList.add(sender === 'user' ? 'user-message' : (sender === 'aetheria' ? 'aetheria-message' : 'other-user-message'));
+    messageDiv.textContent = text;
+    messageWrapper.appendChild(messageDiv);
+    
+    chatArea.appendChild(messageWrapper);
+
+    if (imageUrl) {
+        const imageDiv = document.createElement('div');
+        imageDiv.classList.add('image-container');
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.onerror = () => img.src = https://placehold.co/400x400/2b2b2b/ffffff?text=Image+non+disponible;
+        imageDiv.appendChild(img);
+        chatArea.appendChild(imageDiv);
+    }
+
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+// Fonction pour envoyer un message à Firestore
+async function sendMessage(text, imageUrl = null) {
+    if (!userId) {
+        showMessage("Erreur: Utilisateur non authentifié.", true);
+        return;
+    }
+    const user = auth.currentUser;
+    const senderName = user.displayName  user.email  'Anonyme';
+    try {
+        await addDoc(collection(db, artifacts/${appId}/public/data/messages), {
+            senderId: userId,
+            senderName: senderName,
+            text: text,
+            imageUrl: imageUrl,
+            timestamp: serverTimestamp()
+        });
+        chatInput.value = '';
+    } catch (e) {
+        console.error("Erreur lors de l'envoi du message:", e);showMessage("Erreur lors de l'envoi du message.", true);
+    }
+}
+
+// Événements (inchangés)
+sendButton.addEventListener('click', () => {
+    const message = chatInput.value.trim();
+    if (message) {
+        sendMessage(message);
+    }
+});
+
+chatInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        sendButton.click();
+    }
+});
+
+// **********************************************
+// * Fonctions de démonstration IA (TTS, Image) *
+// **********************************************
+
+// Les fonctions sendImageToAPI, generateTTS, base64ToArrayBuffer, pcmToWav et generateImage
+// ont été omises ici pour breveter le code JavaScript principal,
+// car elles ne sont pas nécessaires pour le débogage de la connexion.
+// Elles fonctionnent comme dans les versions précédentes du fichier.
+
+imageUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64Image = e.target.result;
+        const prompt = chatInput.value.trim() || "Décrivez cette image.";
+        sendMessage(prompt, base64Image);
+        showThinkingIndicator();
+        // REMPLACER sendImageToAPI par une fonction réelle ou un placeholder
+        createMessage("Fonctionnalité Image non implémentée (placeholder).", 'aetheria');
+        hideThinkingIndicator();
+        chatInput.value = '';
+    };
+    reader.readAsDataURL(file);
+});
+
+ttsIcon.addEventListener('click', async () => {
+    const textToSpeak = chatInput.value.trim() || "Bonjour, mon Créateur.";
+    sendMessage(Synthèse vocale du texte : "${textToSpeak}");
+    showThinkingIndicator();
+    // REMPLACER generateTTS par une fonction réelle ou un placeholder
+    createMessage("Fonctionnalité TTS non implémentée (placeholder).", 'aetheria');
+    hideThinkingIndicator();
+    chatInput.value = '';
+});
+
+
+codeIcon.addEventListener('click', () => { sendMessage("Créez un site web simple pour un café."); });
+secretariatIcon.addEventListener('click', () => { sendMessage("Veuillez organiser ma journée de travail pour demain."); });
+documentIcon.addEventListener('click', () => { sendMessage("Rédigez un document sur l'importance de l'intelligence artificielle pour l'humanité."); });
+
+// Démarrage de l'application
+initializeFirebase();</script>
